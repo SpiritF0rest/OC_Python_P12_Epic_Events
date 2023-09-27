@@ -11,7 +11,7 @@ class Client(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(64))
-    email: Mapped[str] = mapped_column(String(255))
+    email: Mapped[str] = mapped_column(String(255), unique=True)
     phone: Mapped[str] = mapped_column(String(10))
     company: Mapped[str] = mapped_column(String(255))
     creation_date: Mapped[datetime]
