@@ -10,11 +10,11 @@ Status = Literal["SIGNED", "UNSIGNED"]
 
 
 class Contract(Base):
-    __tablename__ = "contract"
+    __tablename__ = "contracts"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    client_id: Mapped[int] = mapped_column(ForeignKey("client.id"))
-    commercial_contact_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    client_id: Mapped[int] = mapped_column(ForeignKey("clients.id"))
+    commercial_contact_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     total_amount: Mapped[int]
     left_to_pay: Mapped[int]
     status: Mapped[Status]
