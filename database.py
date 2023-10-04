@@ -26,7 +26,7 @@ url_object = URL.create(
 )
 
 # f"postgresql+{DB_DRIVER}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-engine = create_engine(url_object, echo=True)
+engine = create_engine(url_object)
 
 Base.metadata.create_all(engine)
 

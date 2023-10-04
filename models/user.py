@@ -1,4 +1,5 @@
 from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -23,4 +24,8 @@ class User(Base):
 
     def check_password(self, password):
         password_hasher = PasswordHasher()
-        password_hasher.verify(self.password, password)
+        try:
+            password_hasher.verify(self.password, password)
+            return True
+        except VerifyMismatchError:
+            return False

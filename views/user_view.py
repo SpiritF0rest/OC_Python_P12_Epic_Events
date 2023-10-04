@@ -1,9 +1,11 @@
 import click
 
+from controllers.auth_controller import check_auth
 from controllers.user_controller import create_user_controller
 
 
 @click.group()
+@check_auth
 def cli_user():
     pass
 
@@ -12,10 +14,10 @@ def cli_user():
 @click.option("-req", "--requester", required=True, type=str)
 @click.option("-n", "--name", required=True, type=str)
 @click.option("-e", "--email", required=True, type=str)
-@click.option("-p", "--password", required=True, type=str)
+@click.password_option()
 @click.option("-r", "--role", required=True, type=str)
-def create_user(requester, name, email, password, role):
-    create_user_controller(requester, name, email, password, role)
+def create_user(auth_id, requester, name, email, password, role):
+    print(create_user_controller(auth_id, requester, name, email, password, role))
 
 
 @cli_user.command()
