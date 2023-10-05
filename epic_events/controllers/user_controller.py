@@ -1,7 +1,7 @@
 from sqlalchemy import select
 
-from database import current_session
-from models import Role, User
+from epic_events.database import current_session
+from epic_events.models import Role, User
 
 
 @current_session

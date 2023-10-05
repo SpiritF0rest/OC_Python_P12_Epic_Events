@@ -1,6 +1,6 @@
 import click
 
-from controllers.auth_controller import login_user_controller
+from epic_events.controllers.auth_controller import login_user_controller
 
 
 @click.group()

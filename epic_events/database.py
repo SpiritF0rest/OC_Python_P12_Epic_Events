@@ -1,11 +1,11 @@
-from sqlalchemy import create_engine, URL, select
-from dotenv import load_dotenv
 from os import getenv
 
+from dotenv import load_dotenv
+from sqlalchemy import create_engine, URL, select
 from sqlalchemy.orm import Session
 
-from models import Role, User
-from models.base import Base
+from epic_events.models import Role, User
+from epic_events.models.base import Base
 
 load_dotenv()
 

@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from models.base import Base
+from epic_events.models.base import Base
 
 
 class Event(Base):

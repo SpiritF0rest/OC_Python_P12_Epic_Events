@@ -1,11 +1,10 @@
 import click
 
-from controllers.auth_controller import check_auth
-from controllers.user_controller import create_user_controller
+from epic_events.controllers.auth_controller import check_auth
+from epic_events.controllers.user_controller import create_user_controller
 
 
 @click.group()
-@check_auth
 def cli_user():
     pass
 
@@ -16,6 +15,7 @@ def cli_user():
 @click.option("-e", "--email", required=True, type=str)
 @click.password_option()
 @click.option("-r", "--role", required=True, type=str)
+@check_auth
 def create_user(auth_id, requester, name, email, password, role):
     print(create_user_controller(auth_id, requester, name, email, password, role))
 

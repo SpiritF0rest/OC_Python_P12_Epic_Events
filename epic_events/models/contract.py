@@ -4,7 +4,7 @@ from typing import Literal
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
-from models.base import Base
+from epic_events.models.base import Base
 
 Status = Literal["SIGNED", "UNSIGNED"]
 

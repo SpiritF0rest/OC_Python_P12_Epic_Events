@@ -8,8 +8,8 @@ from dotenv import load_dotenv
 from jwt import encode, decode, InvalidTokenError
 from sqlalchemy import select
 
-from database import current_session
-from models import User
+from epic_events.database import current_session
+from epic_events.models import User
 
 load_dotenv()
 JWT_KEY = getenv("JWT_KEY")
@@ -39,6 +39,8 @@ def get_token():
             data = load(f)
             return data.get('token', None)
     except JSONDecodeError:
+        return None
+    except FileNotFoundError:
         return None
 
 
