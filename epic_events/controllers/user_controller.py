@@ -1,25 +1,20 @@
+from click import ClickException
 from sqlalchemy import select
 
-from epic_events.database import current_session
+from epic_events.controllers.permissions_controller import has_permission
 from epic_events.models import Role, User
 
 
-@current_session
-def create_user_controller(session, auth_id, requester, name, email, password, role):
+@has_permission("management")
+def create_user_controller(session, requester, name, email, password, role, auth_id):
     if not requester and name and email and password and role:
-        return "Missing data in the command"
-    management = session.scalar(select(Role).where(Role.name == "management"))
+        raise ClickException("Missing data in the command")
+    if session.scalar(select(User).where(User.email == email)):
+        raise ClickException(f"User ({email}) already exist")
+    new_user_role = session.scalar(select(Role).where(Role.name == role))
+    if not new_user_role:
+        raise ClickException(f"{role} is not a correct role.")
     try:
-        user = session.scalar(select(User).where(User.email == requester))
-        if not user:
-            return "Please, verify your email."
-        if management.id != user.role or user.id != auth_id["id"]:
-            return "Sorry, you're not authorized to create user."
-        if session.scalar(select(User).where(User.email == email)):
-            return f"User ({email}) already exist"
-        new_user_role = session.scalar(select(Role).where(Role.name == role))
-        if not new_user_role:
-            return f"{role} is not a correct role."
         new_user = User(name=name,
                         email=email,
                         role=new_user_role.id)
@@ -28,4 +23,4 @@ def create_user_controller(session, auth_id, requester, name, email, password, r
         session.commit()
         return f"User {email} is successfully created"
     except Exception as e:
-        return f"{type(e)}, {e}"
+        raise ClickException(f"Error: {e}") from e

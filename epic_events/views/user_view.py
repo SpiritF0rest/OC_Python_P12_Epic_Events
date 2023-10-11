@@ -17,7 +17,8 @@ def cli_user():
 @click.option("-r", "--role", required=True, type=str)
 @check_auth
 def create_user(auth_id, requester, name, email, password, role):
-    print(create_user_controller(auth_id, requester, name, email, password, role))
+    print(create_user_controller(name=name, email=email, password=password,
+                                 role=role, requester=requester, auth_id=auth_id))
 
 
 @cli_user.command()
