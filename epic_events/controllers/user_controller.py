@@ -5,7 +5,7 @@ from epic_events.controllers.permissions_controller import has_permission
 from epic_events.models import Role, User
 
 
-@has_permission("management")
+@has_permission(["management"])
 def create_user_controller(session, requester, name, email, password, role, auth_id):
     if not requester and name and email and password and role:
         raise ClickException("Missing data in the command")
@@ -24,3 +24,4 @@ def create_user_controller(session, requester, name, email, password, role, auth
         return f"User {email} is successfully created"
     except Exception as e:
         raise ClickException(f"Error: {e}") from e
+

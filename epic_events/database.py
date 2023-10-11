@@ -1,3 +1,4 @@
+from functools import wraps
 from os import getenv
 
 from dotenv import load_dotenv
@@ -32,6 +33,7 @@ Base.metadata.create_all(engine)
 
 
 def current_session(function):
+    @wraps(function)
     def wrapper(*args, **kwargs):
         with Session(engine) as session:
             return function(session, *args, **kwargs)

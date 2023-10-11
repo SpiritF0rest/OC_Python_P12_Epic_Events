@@ -4,30 +4,23 @@ from json.decoder import JSONDecodeError
 from os import getenv
 
 import click
-from click import ClickException
 from dotenv import load_dotenv
 from jwt import encode, decode, InvalidTokenError
 from sqlalchemy import select
 
 from epic_events.database import current_session
 from epic_events.models import User
+from epic_events.views.auth_view import display_successful_connection, \
+    display_auth_already_connected, display_invalid_token, display_auth_data_entry_error, display_not_connected_error
 
 load_dotenv()
 JWT_KEY = getenv("JWT_KEY")
 TOKEN_FILE_PATH = "config.json"
 
 
-@current_session
-def login_user_controller(session, email, password):
-    user = session.scalar(select(User).where(User.email == email))
-    if not (user and user.check_password(password)):
-        raise ClickException("Please, be sure to use the correct email and password.")
-    if get_token():
-        raise ClickException("You are already connected.")
-    token = encode({"id": user.id}, JWT_KEY, algorithm="HS256")
-    with open(TOKEN_FILE_PATH, "w") as f:
-        dump({"token": token}, f)
-    return "Connection successful."
+@click.group()
+def auth():
+    pass
 
 
 def verify_token(token):
@@ -50,10 +43,31 @@ def check_auth(function):
     def wrapper(*args, **kwargs):
         token = get_token()
         if not token:
-            raise ClickException("Please log in first.")
+            return display_not_connected_error()
         try:
             auth_id = verify_token(token)
             return function(auth_id, *args, ** kwargs)
         except InvalidTokenError:
-            raise ClickException("Invalid token")
+            return display_invalid_token()
     return wrapper
+
+
+@auth.command()
+@click.option("-e", "--email", required=True, type=str)
+@click.password_option()
+@current_session
+def login(session, email, password):
+    user = session.scalar(select(User).where(User.email == email))
+    if not (user and user.check_password(password)):
+        return display_auth_data_entry_error()
+    if get_token():
+        return display_auth_already_connected()
+    token = encode({"id": user.id}, JWT_KEY, algorithm="HS256")
+    with open(TOKEN_FILE_PATH, "w") as f:
+        dump({"token": token}, f)
+    return display_successful_connection()
+
+
+@auth.command()
+def logout():
+    pass

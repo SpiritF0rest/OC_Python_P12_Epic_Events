@@ -1,5 +1,8 @@
 import click
 
+from epic_events.controllers.auth_controller import check_auth
+from epic_events.controllers.event_controller import list_events_controller
+
 
 @click.group()
 def cli_event():
@@ -17,8 +20,10 @@ def update_event():
 
 
 @cli_event.command()
-def list_events():
-    pass
+@click.option("-req", "--requester", required=True, type=str)
+@check_auth
+def list_events(auth_id, requester):
+    print(list_events_controller(auth_id=auth_id, requester=requester))
 
 
 @cli_event.command()

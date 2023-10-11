@@ -7,7 +7,7 @@ from epic_events.database import current_session
 from epic_events.models import User, Role
 
 
-def has_permission(role):
+def has_permission(roles):
     @current_session
     def decorator(session, function):
         @wraps(function)
@@ -21,8 +21,8 @@ def has_permission(role):
             user = session.scalar(select(User).where(User.email == user_email))
             if not user:
                 raise ClickException("Please, verify your email.")
-            selected_role = session.scalar(select(Role).where(Role.name == role))
-            if user.role != selected_role.id or user.id != auth_id["id"]:
+            selected_roles = [session.scalar(select(Role.id).where(Role.name == role)) for role in roles]
+            if user.role not in selected_roles or user.id != auth_id["id"]:
                 raise ClickException("Sorry, you're not authorized.")
             return function(session, *args, **kwargs)
         return wrapper
