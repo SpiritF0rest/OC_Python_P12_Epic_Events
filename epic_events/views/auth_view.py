@@ -19,3 +19,7 @@ def display_invalid_token():
 
 def display_not_connected_error():
     raise ClickException("Please log in first.")
+
+
+def display_missing_requester():
+    raise ClickException("Missing requester.")

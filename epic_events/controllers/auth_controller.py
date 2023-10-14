@@ -40,13 +40,15 @@ def get_token():
 
 def check_auth(function):
     @wraps(function)
-    def wrapper(*args, **kwargs):
+    @current_session
+    def wrapper(session, *args, **kwargs):
         token = get_token()
         if not token:
             return display_not_connected_error()
         try:
             auth_id = verify_token(token)
-            return function(auth_id, *args, ** kwargs)
+            current_user = session.scalar(select(User).where(User.id == auth_id["id"]))
+            return function(session=session, current_user=current_user, *args, ** kwargs)
         except InvalidTokenError:
             return display_invalid_token()
     return wrapper

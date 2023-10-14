@@ -1,29 +1,20 @@
 from functools import wraps
 
-from click import ClickException
 from sqlalchemy import select
 
-from epic_events.database import current_session
-from epic_events.models import User, Role
+from epic_events.controllers.auth_controller import check_auth
+from epic_events.models import Role
+from epic_events.views.permissions_view import display_not_authorized
 
 
 def has_permission(roles):
-    @current_session
-    def decorator(session, function):
+    def decorator(function):
         @wraps(function)
-        def wrapper(*args, **kwargs):
-            auth_id = kwargs.get("auth_id")
-            if auth_id is None:
-                raise ClickException("Are you properly authenticated ?")
-            user_email = kwargs.get("requester")
-            if user_email is None:
-                raise ClickException("Missing requester.")
-            user = session.scalar(select(User).where(User.email == user_email))
-            if not user:
-                raise ClickException("Please, verify your email.")
+        @check_auth
+        def wrapper(session, current_user, *args, **kwargs):
             selected_roles = [session.scalar(select(Role.id).where(Role.name == role)) for role in roles]
-            if user.role not in selected_roles or user.id != auth_id["id"]:
-                raise ClickException("Sorry, you're not authorized.")
+            if current_user.role not in selected_roles:
+                return display_not_authorized()
             return function(session, *args, **kwargs)
         return wrapper
     return decorator

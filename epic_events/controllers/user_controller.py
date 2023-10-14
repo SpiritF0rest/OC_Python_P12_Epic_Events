@@ -1,19 +1,31 @@
-from click import ClickException
+import click
 from sqlalchemy import select
 
 from epic_events.controllers.permissions_controller import has_permission
 from epic_events.models import Role, User
+from epic_events.views.generic_view import display_missing_data, display_exception
+from epic_events.views.user_view import display_user_already_exists, display_incorrect_role, display_user_created
 
 
-@has_permission(["management"])
-def create_user_controller(session, requester, name, email, password, role, auth_id):
-    if not requester and name and email and password and role:
-        raise ClickException("Missing data in the command")
+@click.group()
+def user():
+    pass
+
+
+@user.command()
+@click.option("-n", "--name", required=True, type=str)
+@click.option("-e", "--email", required=True, type=str)
+@click.option("-r", "--role", required=True, type=str)
+@click.password_option()
+@has_permission(roles=["management"])
+def create_user(session, name, email, password, role):
+    if not name and email and password and role:
+        return display_missing_data()
     if session.scalar(select(User).where(User.email == email)):
-        raise ClickException(f"User ({email}) already exist")
+        return display_user_already_exists(email)
     new_user_role = session.scalar(select(Role).where(Role.name == role))
     if not new_user_role:
-        raise ClickException(f"{role} is not a correct role.")
+        return display_incorrect_role(role)
     try:
         new_user = User(name=name,
                         email=email,
@@ -21,7 +33,21 @@ def create_user_controller(session, requester, name, email, password, role, auth
         new_user.set_password(password)
         session.add(new_user)
         session.commit()
-        return f"User {email} is successfully created"
+        return display_user_created(email)
     except Exception as e:
-        raise ClickException(f"Error: {e}") from e
+        return display_exception(e)
 
+
+@user.command()
+def update_user():
+    pass
+
+
+@user.command()
+def get_user():
+    pass
+
+
+@user.command()
+def delete_user():
+    pass

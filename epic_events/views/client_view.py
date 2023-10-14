@@ -1,39 +1,17 @@
-import click
-
-from epic_events.controllers.auth_controller import check_auth
-from epic_events.controllers.client_controller import list_clients_controller, get_client_controller
+from click import ClickException
 
 
-@click.group()
-def cli_client():
-    pass
+def display_missing_data():
+    raise ClickException("Missing data in the command.")
 
 
-@cli_client.command()
-def create_client():
-    pass
+def display_unknown_client():
+    raise ClickException("Sorry, this client does not exist.")
 
 
-@cli_client.command()
-def update_client():
-    pass
+def display_client_data(data):
+    print(data)
 
 
-@cli_client.command()
-@click.option("-req", "--requester", required=True, type=str)
-@check_auth
-def list_clients(auth_id, requester):
-    print(list_clients_controller(auth_id=auth_id, requester=requester))
-
-
-@cli_client.command()
-@click.option("-req", "--requester", required=True, type=str)
-@click.option("-n", "--name", required=True, type=str)
-@check_auth
-def get_client(auth_id, requester, name):
-    print(get_client_controller(auth_id=auth_id, requester=requester, name=name))
-
-
-@cli_client.command()
-def delete_client():
-    pass
+def display_clients_list(clients):
+    print(clients)
