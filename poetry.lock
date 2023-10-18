@@ -660,6 +660,21 @@ tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
 testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
 
 [[package]]
+name = "pytest-sqlalchemy-mock"
+version = "0.1.5"
+description = "pytest sqlalchemy plugin for mock"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pytest-sqlalchemy-mock-0.1.5.tar.gz", hash = "sha256:2e841902cabcff98f861dd3f042fb4c440965061c8601777f61b3363b5691eb6"},
+    {file = "pytest_sqlalchemy_mock-0.1.5-py2.py3-none-any.whl", hash = "sha256:d1d8ad35648c3048efbda9a42d5cbc0e5a5ad30d0cc0cc39073e7f3b79307e91"},
+]
+
+[package.dependencies]
+pytest = ">=2.0"
+sqlalchemy = "*"
+
+[[package]]
 name = "python-dotenv"
 version = "1.0.0"
 description = "Read key-value pairs from a .env file and set them as environment variables"
@@ -794,4 +809,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "548a96d87f563b5af97e384be0a241d3e964aa6c42bf10a3844782de084ef66f"
+content-hash = "688d6fff0670c24c7c83492ba1dedc6da66458b70281c9051af04746cd4fa3d6"
