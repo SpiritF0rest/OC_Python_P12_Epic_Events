@@ -1,6 +1,7 @@
 import click
 from sqlalchemy import select
 
+from epic_events.controllers.auth_controller import check_auth
 from epic_events.controllers.permissions_controller import has_permission
 from epic_events.models import Client
 from epic_events.views.client_view import display_missing_data, display_unknown_client, display_client_data, \
@@ -9,11 +10,14 @@ from epic_events.views.generic_view import display_exception
 
 
 @click.group()
-def client():
-    pass
+@click.pass_context
+@check_auth
+def client(ctx):
+    ctx.ensure_object(dict)
 
 
 @client.command()
+@click.pass_context
 @has_permission(["management", "commercial", "support"])
 def list_clients(session):
     try:
@@ -25,6 +29,7 @@ def list_clients(session):
 
 @client.command()
 @click.option("-id", "--client_id", required=True, type=int)
+@click.pass_context
 @has_permission(["management", "commercial", "support"])
 def get_client(session, client_id):
     if not client_id:

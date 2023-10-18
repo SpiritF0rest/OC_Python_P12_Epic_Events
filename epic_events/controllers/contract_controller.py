@@ -1,17 +1,21 @@
 import click
 from sqlalchemy import select
 
+from epic_events.controllers.auth_controller import check_auth
 from epic_events.controllers.permissions_controller import has_permission
 from epic_events.models import Contract
 from epic_events.views.generic_view import display_exception
 
 
 @click.group()
-def contract():
-    pass
+@click.pass_context
+@check_auth
+def contract(ctx):
+    ctx.ensure_object(dict)
 
 
 @contract.command()
+@click.pass_context
 @has_permission(["management", "commercial", "support"])
 def list_contracts(session):
     try:
