@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 from jwt import encode, decode, InvalidTokenError
 from sqlalchemy import select
 
-from epic_events.database import current_session
 from epic_events.models import User
 from epic_events.views.auth_view import display_successful_connection, \
     display_auth_already_connected, display_invalid_token, display_auth_data_entry_error, display_not_connected_error
@@ -19,8 +18,9 @@ TOKEN_FILE_PATH = "config.json"
 
 
 @click.group()
-def auth():
-    pass
+@click.pass_context
+def auth(ctx):
+    ctx.ensure_object(dict)
 
 
 def verify_token(token):
@@ -40,15 +40,16 @@ def get_token():
 
 def check_auth(function):
     @wraps(function)
-    @current_session
-    def wrapper(session, *args, **kwargs):
+    def wrapper(ctx, *args, **kwargs):
+        session = ctx.obj["session"]
         token = get_token()
         if not token:
             return display_not_connected_error()
         try:
             auth_id = verify_token(token)
             current_user = session.scalar(select(User).where(User.id == auth_id["id"]))
-            return function(session=session, current_user=current_user, *args, ** kwargs)
+            ctx.obj["current_user"] = current_user
+            return function(ctx, *args, ** kwargs)
         except InvalidTokenError:
             return display_invalid_token()
     return wrapper
@@ -57,8 +58,9 @@ def check_auth(function):
 @auth.command()
 @click.option("-e", "--email", required=True, type=str)
 @click.password_option()
-@current_session
-def login(session, email, password):
+@click.pass_context
+def login(ctx, email, password):
+    session = ctx.obj["session"]
     user = session.scalar(select(User).where(User.email == email))
     if not (user and user.check_password(password)):
         return display_auth_data_entry_error()

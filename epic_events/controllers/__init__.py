@@ -6,11 +6,14 @@ from .contract_controller import contract
 from .event_controller import event
 from .role_controller import role
 from .auth_controller import auth
+from ..database import current_session
 
 
 @click.group()
-def cli():
-    pass
+@click.pass_context
+def cli(ctx):
+    ctx.ensure_object(dict)
+    ctx.obj["session"] = current_session()
 
 
 cli.add_command(user)

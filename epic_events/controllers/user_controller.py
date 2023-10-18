@@ -1,6 +1,7 @@
 import click
 from sqlalchemy import select
 
+from epic_events.controllers.auth_controller import check_auth
 from epic_events.controllers.permissions_controller import has_permission
 from epic_events.models import Role, User
 from epic_events.views.generic_view import display_missing_data, display_exception
@@ -8,8 +9,10 @@ from epic_events.views.user_view import display_user_already_exists, display_inc
 
 
 @click.group()
-def user():
-    pass
+@click.pass_context
+@check_auth
+def user(ctx):
+    ctx.ensure_object(dict)
 
 
 @user.command()
@@ -17,6 +20,7 @@ def user():
 @click.option("-e", "--email", required=True, type=str)
 @click.option("-r", "--role", required=True, type=str)
 @click.password_option()
+@click.pass_context
 @has_permission(roles=["management"])
 def create_user(session, name, email, password, role):
     if not name and email and password and role:
