@@ -12,4 +12,5 @@ class TestRoleController:
         current_user = mocked_session.scalar(select(User).where(User.id == 1))
         result = self.runner.invoke(list_roles, obj={"session": mocked_session, "current_user": current_user})
         assert result.exit_code == 0
+        assert result.output.count("Role") == 3
         assert [role in result.output for role in ["management", "commercial", "support"]]

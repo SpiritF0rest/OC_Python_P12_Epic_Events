@@ -4,6 +4,7 @@ from sqlalchemy import select
 from epic_events.controllers.auth_controller import check_auth
 from epic_events.controllers.permissions_controller import has_permission
 from epic_events.models import Contract
+from epic_events.views.contract_view import display_contracts_list
 from epic_events.views.generic_view import display_exception
 
 
@@ -20,7 +21,7 @@ def contract(ctx):
 def list_contracts(session):
     try:
         contracts = session.scalars(select(Contract)).all()
-        return contracts
+        return display_contracts_list(contracts)
     except Exception as e:
         return display_exception(e)
 
