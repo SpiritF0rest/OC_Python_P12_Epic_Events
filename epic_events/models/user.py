@@ -16,7 +16,7 @@ class User(Base):
     role: Mapped[int] = mapped_column(ForeignKey("roles.id"))
 
     def __repr__(self):
-        return f"User(id={self.id}, name={self.name}, role={self.role})"
+        return f"User(id={self.id}, name={self.name}, email={self.email}, role={self.role})"
 
     def set_password(self, password):
         password_hasher = PasswordHasher()

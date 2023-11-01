@@ -4,9 +4,9 @@ from sqlalchemy import select
 from epic_events.controllers.auth_controller import check_auth
 from epic_events.controllers.permissions_controller import has_permission
 from epic_events.models import Client
-from epic_events.views.client_view import display_missing_data, display_unknown_client, display_client_data, \
+from epic_events.views.client_view import display_unknown_client, display_client_data, \
     display_clients_list
-from epic_events.views.generic_view import display_exception
+from epic_events.views.generic_view import display_exception, display_missing_data
 
 
 @click.group()

@@ -1,11 +1,12 @@
 import click
-from sqlalchemy import select
+from sqlalchemy import select, update, delete
 
 from epic_events.controllers.auth_controller import check_auth
 from epic_events.controllers.permissions_controller import has_permission
 from epic_events.models import Role, User
-from epic_events.views.generic_view import display_missing_data, display_exception
-from epic_events.views.user_view import display_user_already_exists, display_incorrect_role, display_user_created
+from epic_events.views.generic_view import display_missing_data, display_exception, display_no_data_to_update
+from epic_events.views.user_view import display_user_already_exists, display_incorrect_role, display_user_created, \
+    display_unknown_user, display_user_data, display_user_updated, display_user_deleted, display_users_list
 
 
 @click.group()
@@ -23,7 +24,7 @@ def user(ctx):
 @click.pass_context
 @has_permission(roles=["management"])
 def create_user(session, name, email, password, role):
-    if not name and email and password and role:
+    if not (name and email and password and role):
         return display_missing_data()
     if session.scalar(select(User).where(User.email == email)):
         return display_user_already_exists(email)
@@ -43,15 +44,84 @@ def create_user(session, name, email, password, role):
 
 
 @user.command()
-def update_user():
-    pass
+@click.option("-id", "--user_id", required=True, type=int)
+@click.option("-n", "--name", required=False, type=str)
+@click.option("-e", "--email", required=False, type=str)
+@click.option("-r", "--role", required=False, type=int)
+@click.pass_context
+@has_permission(roles=["management"])
+def update_user(session, user_id, name, email, role):
+    if not user_id:
+        return display_missing_data()
+    if not (name or email or role):
+        return display_no_data_to_update()
+    selected_role = ""
+    if role:
+        selected_role = session.scalar(select(Role).where(Role.id == role))
+        if not selected_role:
+            return display_incorrect_role(role)
+    selected_user = session.scalar(select(User).where(User.id == user_id))
+    if not selected_user:
+        return display_unknown_user()
+    user_name = name if name else selected_user.name
+    user_email = email if email else selected_user.email
+    user_role = selected_role.id if role else selected_user.role
+    try:
+        updated_user = (update(User).where(User.id == user_id).
+                        values(name=user_name,
+                               email=user_email,
+                               role=user_role))
+        session.execute(updated_user)
+        session.commit()
+        return display_user_updated(user_email)
+    except Exception as e:
+        return display_exception(e)
 
 
 @user.command()
-def get_user():
-    pass
+@click.option("-id", "--user_id", required=True, type=int)
+@click.pass_context
+@has_permission(roles=["management"])
+def get_user(session, user_id):
+    if not user_id:
+        return display_missing_data()
+    selected_user = session.scalar(select(User).where(User.id == user_id))
+    if not selected_user:
+        return display_unknown_user()
+    return display_user_data(selected_user)
 
 
 @user.command()
-def delete_user():
-    pass
+@click.option("-id", "--user_id", required=True, type=int)
+@click.confirmation_option(prompt="Are you sure you want to delete this user?")
+@click.pass_context
+@has_permission(roles=["management"])
+def delete_user(session, user_id):
+    selected_user = session.scalar(select(User).where(User.id == user_id))
+    if not selected_user:
+        return display_unknown_user()
+    try:
+        statement = (delete(User).where(User.id == user_id))
+        session.execute(statement)
+        session.commit()
+        return display_user_deleted()
+    except Exception as e:
+        return display_exception(e)
+
+
+@user.command()
+@click.option("-r", "--role_id", required=False, type=int)
+@click.pass_context
+@has_permission(["management", "commercial", "support"])
+def list_users(session, role_id):
+    try:
+        if role_id:
+            selected_role = session.scalar(select(Role).where(Role.id == role_id))
+            if not selected_role:
+                return display_incorrect_role(role_id)
+            users = session.scalars(select(User).where(User.role == role_id).order_by(User.name))
+        else:
+            users = session.scalars(select(User).order_by(User.name)).all()
+        return display_users_list(users)
+    except Exception as e:
+        return display_exception(e)
