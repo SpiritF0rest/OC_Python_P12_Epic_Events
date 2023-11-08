@@ -15,7 +15,7 @@ def contract(ctx):
     ctx.ensure_object(dict)
 
 
-@contract.command()
+@contract.command(name="list")
 @click.pass_context
 @has_permission(["management", "commercial", "support"])
 def list_contracts(session):
@@ -26,21 +26,21 @@ def list_contracts(session):
         return display_exception(e)
 
 
-@contract.command()
+@contract.command(name="create")
 def create_contract():
     pass
 
 
-@contract.command()
+@contract.command(name="update")
 def update_contract():
     pass
 
 
-@contract.command()
+@contract.command(name="get")
 def get_contract():
     pass
 
 
-@contract.command()
+@contract.command(name="delete")
 def delete_contract():
     pass

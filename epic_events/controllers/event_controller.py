@@ -15,7 +15,7 @@ def event(ctx):
     ctx.ensure_object(dict)
 
 
-@event.command()
+@event.command(name="list")
 @click.pass_context
 @has_permission(["management", "commercial", "support"])
 def list_events(session):
@@ -26,21 +26,21 @@ def list_events(session):
         return display_exception(e)
 
 
-@event.command()
+@event.command(name="create")
 def create_event():
     pass
 
 
-@event.command()
+@event.command(name="update")
 def update_event():
     pass
 
 
-@event.command()
+@event.command(name="get")
 def get_event():
     pass
 
 
-@event.command()
+@event.command(name="delete")
 def delete_event():
     pass

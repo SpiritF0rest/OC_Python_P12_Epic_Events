@@ -16,7 +16,7 @@ def client(ctx):
     ctx.ensure_object(dict)
 
 
-@client.command()
+@client.command(name="list")
 @click.pass_context
 @has_permission(["management", "commercial", "support"])
 def list_clients(session):
@@ -27,7 +27,7 @@ def list_clients(session):
         return display_exception(e)
 
 
-@client.command()
+@client.command(name="get")
 @click.option("-id", "--client_id", required=True, type=int)
 @click.pass_context
 @has_permission(["management", "commercial", "support"])
@@ -40,16 +40,16 @@ def get_client(session, client_id):
     return display_client_data(selected_client)
 
 
-@client.command()
+@client.command(name="create")
 def create_client():
     pass
 
 
-@client.command()
+@client.command(name="update")
 def update_client():
     pass
 
 
-@client.command()
+@client.command(name="delete")
 def delete_client():
     pass

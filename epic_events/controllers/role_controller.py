@@ -15,7 +15,7 @@ def role(ctx):
     ctx.ensure_object(dict)
 
 
-@role.command()
+@role.command(name="list")
 @click.pass_context
 @has_permission(["management"])
 def list_roles(session):
@@ -26,6 +26,6 @@ def list_roles(session):
         return display_exception(e)
 
 
-@role.command()
+@role.command(name="create")
 def create_role():
     pass

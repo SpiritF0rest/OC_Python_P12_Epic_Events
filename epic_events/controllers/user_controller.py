@@ -16,10 +16,10 @@ def user(ctx):
     ctx.ensure_object(dict)
 
 
-@user.command()
+@user.command(name="create")
 @click.option("-n", "--name", required=True, type=str)
 @click.option("-e", "--email", required=True, type=str)
-@click.option("-r", "--role", required=True, type=str)
+@click.option("-r", "--role", required=True, type=int)
 @click.password_option()
 @click.pass_context
 @has_permission(roles=["management"])
@@ -28,13 +28,13 @@ def create_user(session, name, email, password, role):
         return display_missing_data()
     if session.scalar(select(User).where(User.email == email)):
         return display_user_already_exists(email)
-    new_user_role = session.scalar(select(Role).where(Role.name == role))
-    if not new_user_role:
+    user_role = session.scalar(select(Role).where(Role.id == role))
+    if not user_role:
         return display_incorrect_role(role)
     try:
         new_user = User(name=name,
                         email=email,
-                        role=new_user_role.id)
+                        role=user_role.id)
         new_user.set_password(password)
         session.add(new_user)
         session.commit()
@@ -43,7 +43,7 @@ def create_user(session, name, email, password, role):
         return display_exception(e)
 
 
-@user.command()
+@user.command(name="update")
 @click.option("-id", "--user_id", required=True, type=int)
 @click.option("-n", "--name", required=False, type=str)
 @click.option("-e", "--email", required=False, type=str)
@@ -63,22 +63,17 @@ def update_user(session, user_id, name, email, role):
     selected_user = session.scalar(select(User).where(User.id == user_id))
     if not selected_user:
         return display_unknown_user()
-    user_name = name if name else selected_user.name
-    user_email = email if email else selected_user.email
-    user_role = selected_role.id if role else selected_user.role
     try:
-        updated_user = (update(User).where(User.id == user_id).
-                        values(name=user_name,
-                               email=user_email,
-                               role=user_role))
-        session.execute(updated_user)
+        selected_user.name = name if name else selected_user.name
+        selected_user.email = email if email else selected_user.email
+        selected_user.role = selected_role.id if role else selected_user.role
         session.commit()
-        return display_user_updated(user_email)
+        return display_user_updated(selected_user.email)
     except Exception as e:
         return display_exception(e)
 
 
-@user.command()
+@user.command(name="get")
 @click.option("-id", "--user_id", required=True, type=int)
 @click.pass_context
 @has_permission(roles=["management"])
@@ -91,7 +86,7 @@ def get_user(session, user_id):
     return display_user_data(selected_user)
 
 
-@user.command()
+@user.command(name="delete")
 @click.option("-id", "--user_id", required=True, type=int)
 @click.confirmation_option(prompt="Are you sure you want to delete this user?")
 @click.pass_context
@@ -101,27 +96,26 @@ def delete_user(session, user_id):
     if not selected_user:
         return display_unknown_user()
     try:
-        statement = (delete(User).where(User.id == user_id))
-        session.execute(statement)
+        session.delete(selected_user)
         session.commit()
         return display_user_deleted()
     except Exception as e:
         return display_exception(e)
 
 
-@user.command()
+@user.command(name="list")
 @click.option("-r", "--role_id", required=False, type=int)
 @click.pass_context
 @has_permission(["management", "commercial", "support"])
 def list_users(session, role_id):
     try:
+        query = select(User)
         if role_id:
             selected_role = session.scalar(select(Role).where(Role.id == role_id))
             if not selected_role:
                 return display_incorrect_role(role_id)
-            users = session.scalars(select(User).where(User.role == role_id).order_by(User.name))
-        else:
-            users = session.scalars(select(User).order_by(User.name)).all()
+            query = query.where(User.role == role_id)
+        users = session.scalars(query.order_by(User.name))
         return display_users_list(users)
     except Exception as e:
         return display_exception(e)
