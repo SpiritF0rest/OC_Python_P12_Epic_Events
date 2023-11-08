@@ -14,7 +14,6 @@ class Contract(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     client_id: Mapped[int] = mapped_column(ForeignKey("clients.id"))
-    commercial_contact_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     total_amount: Mapped[int]
     left_to_pay: Mapped[int]
     status: Mapped[Status]
@@ -22,5 +21,4 @@ class Contract(Base):
     update_date: Mapped[datetime]
 
     def __repr__(self):
-        return (f"Contract(id={self.id}, client_id={self.client_id}, "
-                f"contact_id={self.commercial_contact_id}, status={self.status})")
+        return f"Contract(id={self.id}, client_id={self.client_id}, status={self.status})"

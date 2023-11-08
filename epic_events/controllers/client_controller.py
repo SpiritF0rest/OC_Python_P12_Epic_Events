@@ -107,7 +107,6 @@ def update_client(session, ctx, client_id, email, name, phone, company):
         session.commit()
         return display_client_updated(selected_client.email)
     except Exception as e:
-        print(type(e))
         return display_exception(e)
 
 
