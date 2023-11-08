@@ -73,5 +73,10 @@ def login(ctx, email, password):
 
 
 @auth.command()
+@click.confirmation_option(prompt="Are you sure you want to logout?")
 def logout():
-    pass
+    with open(TOKEN_FILE_PATH, "r") as f:
+        data = load(f)
+        del data["token"]
+    with open(TOKEN_FILE_PATH, "w") as f:
+        dump(data, f)
