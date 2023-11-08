@@ -23,7 +23,7 @@ def user(ctx):
 @click.password_option()
 @click.pass_context
 @has_permission(roles=["management"])
-def create_user(session, name, email, password, role):
+def create_user(session, ctx, name, email, password, role):
     if not (name and email and password and role):
         return display_missing_data()
     if session.scalar(select(User).where(User.email == email)):
@@ -50,7 +50,7 @@ def create_user(session, name, email, password, role):
 @click.option("-r", "--role", required=False, type=int)
 @click.pass_context
 @has_permission(roles=["management"])
-def update_user(session, user_id, name, email, role):
+def update_user(session, ctx, user_id, name, email, role):
     if not user_id:
         return display_missing_data()
     if not (name or email or role):
@@ -77,7 +77,7 @@ def update_user(session, user_id, name, email, role):
 @click.option("-id", "--user_id", required=True, type=int)
 @click.pass_context
 @has_permission(roles=["management"])
-def get_user(session, user_id):
+def get_user(session, ctx, user_id):
     if not user_id:
         return display_missing_data()
     selected_user = session.scalar(select(User).where(User.id == user_id))
@@ -91,7 +91,7 @@ def get_user(session, user_id):
 @click.confirmation_option(prompt="Are you sure you want to delete this user?")
 @click.pass_context
 @has_permission(roles=["management"])
-def delete_user(session, user_id):
+def delete_user(session, ctx,  user_id):
     selected_user = session.scalar(select(User).where(User.id == user_id))
     if not selected_user:
         return display_unknown_user()
@@ -107,7 +107,7 @@ def delete_user(session, user_id):
 @click.option("-r", "--role_id", required=False, type=int)
 @click.pass_context
 @has_permission(["management", "commercial", "support"])
-def list_users(session, role_id):
+def list_users(session, ctx, role_id):
     try:
         query = select(User)
         if role_id:

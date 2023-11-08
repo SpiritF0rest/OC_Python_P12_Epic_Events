@@ -15,6 +15,6 @@ def has_permission(roles):
             selected_roles = [session.scalar(select(Role.id).where(Role.name == role)) for role in roles]
             if current_user.role not in selected_roles:
                 return display_not_authorized()
-            return function(session, *args, **kwargs)
+            return function(session, ctx, *args, **kwargs)
         return wrapper
     return decorator

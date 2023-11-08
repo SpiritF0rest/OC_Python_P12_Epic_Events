@@ -10,10 +10,10 @@ class Client(Base):
     __tablename__ = "clients"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(64))
+    name: Mapped[str] = mapped_column(String(64), nullable=True)
     email: Mapped[str] = mapped_column(String(255), unique=True)
-    phone: Mapped[str] = mapped_column(String(10))
-    company: Mapped[str] = mapped_column(String(255))
+    phone: Mapped[str] = mapped_column(String(10), nullable=True)
+    company: Mapped[str] = mapped_column(String(255), nullable=True)
     creation_date: Mapped[datetime]
     update_date: Mapped[datetime]
     commercial_contact_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
