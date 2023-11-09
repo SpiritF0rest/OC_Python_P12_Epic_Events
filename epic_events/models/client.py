@@ -14,8 +14,8 @@ class Client(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True)
     phone: Mapped[str] = mapped_column(String(10), nullable=True)
     company: Mapped[str] = mapped_column(String(255), nullable=True)
-    creation_date: Mapped[datetime]
-    update_date: Mapped[datetime]
+    creation_date: Mapped[datetime] = mapped_column(insert_default=datetime.utcnow())
+    update_date: Mapped[datetime] = mapped_column(insert_default=datetime.utcnow(), onupdate=datetime.utcnow())
     commercial_contact_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
 
     def __repr__(self):

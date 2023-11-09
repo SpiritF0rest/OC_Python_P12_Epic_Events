@@ -11,16 +11,14 @@ class Event(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     contract_id: Mapped[int] = mapped_column(ForeignKey("contracts.id"))
-    client_id: Mapped[int] = mapped_column(ForeignKey("clients.id"))
-    start_date: Mapped[datetime]
-    end_date: Mapped[datetime]
-    support_contact_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    location: Mapped[str] = mapped_column(String(255))
-    attendees: Mapped[int]
-    notes: Mapped[str]
-    creation_date: Mapped[datetime]
-    update_date: Mapped[datetime]
+    start_date: Mapped[datetime] = mapped_column(nullable=True)
+    end_date: Mapped[datetime] = mapped_column(nullable=True)
+    support_contact_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=True)
+    location: Mapped[str] = mapped_column(String(255), nullable=True)
+    attendees: Mapped[int] = mapped_column(nullable=True)
+    notes: Mapped[str] = mapped_column(nullable=True)
+    creation_date: Mapped[datetime] = mapped_column(insert_default=datetime.utcnow())
+    update_date: Mapped[datetime] = mapped_column(insert_default=datetime.utcnow(), onupdate=datetime.utcnow())
 
     def __repr__(self):
-        return (f"Event(id={self.id}, contract_id={self.contract_id}, client_id={self.client_id}, "
-                f"contact_id={self.support_contact_id})")
+        return f"Event(id={self.id}, contract_id={self.contract_id}, contact_id={self.support_contact_id})"

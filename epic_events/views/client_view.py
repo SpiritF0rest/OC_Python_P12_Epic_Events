@@ -29,3 +29,7 @@ def display_client_updated(email):
 
 def display_client_deleted():
     print(f"This client is successfully deleted.")
+
+
+def display_client_contact_updated(client, contact):
+    print(f"{contact.name} is now responsible for the client {client.id}")

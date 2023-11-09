@@ -27,3 +27,7 @@ def display_contract_deleted():
 def display_contract_updated(contract):
     print(f"Id: {contract.id}, client: {contract.client_id}, amount: {contract.total_amount}, "
           f"left to pay: {contract.left_to_pay}, status: {contract.status}")
+
+
+def display_error_amount():
+    raise ClickException("Total amount and left to pay must be positive integer and left to pay can't be bigger than total amount.")

@@ -1,5 +1,3 @@
-from datetime import datetime
-
 import click
 from sqlalchemy import select
 
@@ -8,7 +6,7 @@ from epic_events.controllers.permissions_controller import has_permission
 from epic_events.models import Contract, Client
 from epic_events.views.client_view import display_unknown_client
 from epic_events.views.contract_view import display_contracts_list, display_contract_created, display_unknown_contract, \
-    display_contract_data, display_contract_deleted, display_contract_updated
+    display_contract_data, display_contract_deleted, display_contract_updated, display_error_amount
 from epic_events.views.generic_view import display_exception, display_missing_data, display_no_data_to_update
 from epic_events.views.permissions_view import display_not_authorized
 
@@ -18,6 +16,10 @@ from epic_events.views.permissions_view import display_not_authorized
 @check_auth
 def contract(ctx):
     ctx.ensure_object(dict)
+
+
+def check_amount(amount, lef_to_pay):
+    return True if amount >= lef_to_pay >= 0 and amount >= 0 else display_error_amount()
 
 
 @contract.command(name="list")
@@ -57,14 +59,12 @@ def create_contract(session, ctx, client_id, amount, left_to_pay, status):
     if not client:
         return display_unknown_client()
     try:
-        date_now = datetime.now()
         current_left_to_pay = left_to_pay if left_to_pay else amount
+        check_amount(amount, current_left_to_pay)
         new_contract = Contract(client_id=client_id,
                                 total_amount=amount,
                                 left_to_pay=current_left_to_pay,
-                                status=status,
-                                creation_date=date_now,
-                                update_date=date_now)
+                                status=status)
         session.add(new_contract)
         session.commit()
         return display_contract_created(new_contract)
@@ -73,7 +73,7 @@ def create_contract(session, ctx, client_id, amount, left_to_pay, status):
 
 
 @contract.command(name="update")
-@click.option("-id", "--contract_id", required=False, type=int)
+@click.option("-id", "--contract_id", required=True, type=int)
 @click.option("-a", "--amount", required=False, type=int)
 @click.option("-ltp", "--left_to_pay", required=False, type=int)
 @click.option("-s", "--status", required=False,
@@ -95,11 +95,10 @@ def update_contract(session, ctx, contract_id, amount, left_to_pay, status):
     if requester.role == 1 and client.commercial_contact_id != requester.id:
         return display_not_authorized()
     try:
-        date_now = datetime.now()
         selected_contract.total_amount = amount if amount else selected_contract.total_amount
         selected_contract.left_to_pay = left_to_pay if left_to_pay else selected_contract.left_to_pay
+        check_amount(selected_contract.total_amount, selected_contract.left_to_pay)
         selected_contract.status = status if status else selected_contract.status
-        selected_contract.update_date = date_now
         session.commit()
         return display_contract_updated(selected_contract)
     except Exception as e:

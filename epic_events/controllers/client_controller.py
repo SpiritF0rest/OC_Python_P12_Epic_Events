@@ -1,16 +1,15 @@
-from datetime import datetime
-
 import click
-from sqlalchemy import select
+from sqlalchemy import select, and_
 
 from epic_events.controllers.auth_controller import check_auth
 from epic_events.controllers.permissions_controller import has_permission
-from epic_events.models import Client
+from epic_events.models import Client, User
 from epic_events.views.client_view import display_unknown_client, display_client_data, \
     display_clients_list, display_client_already_exists, display_client_created, display_client_updated, \
-    display_client_deleted
+    display_client_deleted, display_client_contact_updated
 from epic_events.views.generic_view import display_exception, display_missing_data, display_no_data_to_update
 from epic_events.views.permissions_view import display_not_authorized
+from epic_events.views.user_view import display_unknown_user
 
 
 @click.group()
@@ -50,9 +49,9 @@ def get_client(session, ctx,  client_id):
 
 @client.command(name="create")
 @click.option("-e", "--email", required=True, type=str)
-@click.option("-n", "--name", required=False, type=str)
-@click.option("-ph", "--phone", required=False, type=int)
-@click.option("-c", "--company", required=False, type=int)
+@click.option("-n", "--name", required=False, type=str, default=None)
+@click.option("-ph", "--phone", required=False, type=int, default=None)
+@click.option("-c", "--company", required=False, type=int, default=None)
 @click.pass_context
 @has_permission(["commercial"])
 def create_client(session, ctx, email, name, phone, company):
@@ -61,14 +60,11 @@ def create_client(session, ctx, email, name, phone, company):
     if session.scalar(select(Client).where(Client.email == email)):
         return display_client_already_exists(email)
     try:
-        date_now = datetime.now()
         new_client = Client(email=email,
-                            creation_date=date_now,
-                            update_date=date_now,
-                            commercial_contact_id=ctx.obj["current_user"].id)
-        new_client.name = name if name else None
-        new_client.phone = phone if phone else None
-        new_client.company = company if company else None
+                            commercial_contact_id=ctx.obj["current_user"].id,
+                            name=name,
+                            phone=phone,
+                            company=company)
         session.add(new_client)
         session.commit()
         return display_client_created(email)
@@ -81,7 +77,7 @@ def create_client(session, ctx, email, name, phone, company):
 @click.option("-e", "--email", required=False, type=str)
 @click.option("-n", "--name", required=False, type=str)
 @click.option("-ph", "--phone", required=False, type=int)
-@click.option("-c", "--company", required=False, type=int)
+@click.option("-com", "--company", required=False, type=int)
 @click.pass_context
 @has_permission(["commercial"])
 def update_client(session, ctx, client_id, email, name, phone, company):
@@ -98,14 +94,32 @@ def update_client(session, ctx, client_id, email, name, phone, company):
     if email and session.scalar(select(Client).where(Client.email == email)):
         return display_client_already_exists(email)
     try:
-        date_now = datetime.now()
         selected_client.email = email if email else selected_client.email
         selected_client.name = name if name else selected_client.name
         selected_client.phone = phone if phone else selected_client.phone
         selected_client.company = company if company else selected_client.company
-        selected_client.update_date = date_now
         session.commit()
         return display_client_updated(selected_client.email)
+    except Exception as e:
+        return display_exception(e)
+
+
+@client.command(name="contact")
+@click.option("-id", "--client_id", required=True, type=int)
+@click.option("-c", "--contact_id", required=False, type=int)
+@click.pass_context
+@has_permission(["management"])
+def update_client_contact(session, ctx, client_id, contact_id):
+    selected_client = session.scalar(select(Client).where(Client.id == client_id))
+    if not selected_client:
+        return display_unknown_client()
+    selected_contact = session.scalar(select(User).where(and_(User.id == contact_id, User.role == 1)))
+    if not selected_contact:
+        return display_unknown_user()
+    try:
+        selected_client.commercial_contact_id = selected_contact.id
+        session.commit()
+        return display_client_contact_updated(selected_client, selected_contact)
     except Exception as e:
         return display_exception(e)
 
