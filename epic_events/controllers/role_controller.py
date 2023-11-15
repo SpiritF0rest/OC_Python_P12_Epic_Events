@@ -18,7 +18,7 @@ def role(ctx):
 @role.command(name="list")
 @click.pass_context
 @has_permission(["management"])
-def list_roles(session):
+def list_roles(session, ctx):
     try:
         roles = session.scalars(select(Role)).all()
         return display_roles_list(roles)

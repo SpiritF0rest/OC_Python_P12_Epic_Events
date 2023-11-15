@@ -5,8 +5,9 @@ from epic_events.controllers.auth_controller import check_auth
 from epic_events.controllers.permissions_controller import has_permission
 from epic_events.models import Contract, Client
 from epic_events.views.client_view import display_unknown_client
-from epic_events.views.contract_view import display_contracts_list, display_contract_created, display_unknown_contract, \
-    display_contract_data, display_contract_deleted, display_contract_updated, display_error_amount
+from epic_events.views.contract_view import (display_contracts_list, display_contract_created,
+                                             display_unknown_contract, display_contract_data, display_contract_deleted,
+                                             display_contract_updated, display_error_amount)
 from epic_events.views.generic_view import display_exception, display_missing_data, display_no_data_to_update
 from epic_events.views.permissions_view import display_not_authorized
 

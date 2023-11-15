@@ -51,7 +51,7 @@ def get_client(session, ctx,  client_id):
 @click.option("-e", "--email", required=True, type=str)
 @click.option("-n", "--name", required=False, type=str, default=None)
 @click.option("-ph", "--phone", required=False, type=int, default=None)
-@click.option("-c", "--company", required=False, type=int, default=None)
+@click.option("-c", "--company", required=False, type=str, default=None)
 @click.pass_context
 @has_permission(["commercial"])
 def create_client(session, ctx, email, name, phone, company):
@@ -77,7 +77,7 @@ def create_client(session, ctx, email, name, phone, company):
 @click.option("-e", "--email", required=False, type=str)
 @click.option("-n", "--name", required=False, type=str)
 @click.option("-ph", "--phone", required=False, type=int)
-@click.option("-com", "--company", required=False, type=int)
+@click.option("-com", "--company", required=False, type=str)
 @click.pass_context
 @has_permission(["commercial"])
 def update_client(session, ctx, client_id, email, name, phone, company):
@@ -106,7 +106,7 @@ def update_client(session, ctx, client_id, email, name, phone, company):
 
 @client.command(name="contact")
 @click.option("-id", "--client_id", required=True, type=int)
-@click.option("-c", "--contact_id", required=False, type=int)
+@click.option("-c", "--contact_id", required=True, type=int)
 @click.pass_context
 @has_permission(["management"])
 def update_client_contact(session, ctx, client_id, contact_id):

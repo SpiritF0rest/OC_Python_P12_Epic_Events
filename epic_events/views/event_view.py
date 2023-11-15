@@ -3,7 +3,7 @@ from click import ClickException
 
 def display_events_list(events):
     for event in events:
-        print(f"id: {event.id}, contract: {event.contract_id}, support: {event.support_contact_id}")
+        print(f"Id: {event.id}, contract: {event.contract_id}, support: {event.support_contact_id}")
 
 
 def display_unknown_event():
@@ -11,7 +11,7 @@ def display_unknown_event():
 
 
 def display_event_data(event):
-    print(f"id: {event.id}, contract: {event.contract_id}, start at: {event.start_date}, end at: {event.end_date}, "
+    print(f"Id: {event.id}, contract: {event.contract_id}, start at: {event.start_date}, end at: {event.end_date}, "
           f"support: {event.support_contact_id}, location: {event.location}, attendees: {event.attendees},"
           f" notes: {event.notes}")
 
@@ -29,7 +29,7 @@ def display_error_event_date(start_date, end_date):
 
 
 def display_event_deleted():
-    print(f"This event is successfully deleted.")
+    print("This event is successfully deleted.")
 
 
 def display_event_contact_updated(event, contact):
@@ -37,6 +37,6 @@ def display_event_contact_updated(event, contact):
 
 
 def display_event_updated(event):
-    print(f"id: {event.id}, contract: {event.contract_id}, start at: {event.start_date}, end at: {event.end_date}, "
+    print(f"Id: {event.id}, contract: {event.contract_id}, start at: {event.start_date}, end at: {event.end_date}, "
           f"support: {event.support_contact_id}, location: {event.location}, attendees: {event.attendees},"
           f" notes: {event.notes}")

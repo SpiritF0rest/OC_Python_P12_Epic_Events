@@ -21,7 +21,7 @@ def display_unknown_contract():
 
 
 def display_contract_deleted():
-    print(f"This contract is successfully deleted.")
+    print("This contract is successfully deleted.")
 
 
 def display_contract_updated(contract):
@@ -30,4 +30,5 @@ def display_contract_updated(contract):
 
 
 def display_error_amount():
-    raise ClickException("Total amount and left to pay must be positive integer and left to pay can't be bigger than total amount.")
+    raise ClickException("Total amount and left to pay must be positive integer and left to pay can't be bigger "
+                         "than total amount.")

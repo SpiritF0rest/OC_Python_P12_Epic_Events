@@ -1,5 +1,5 @@
 import click
-from sqlalchemy import select, update, delete
+from sqlalchemy import select
 
 from epic_events.controllers.auth_controller import check_auth
 from epic_events.controllers.permissions_controller import has_permission

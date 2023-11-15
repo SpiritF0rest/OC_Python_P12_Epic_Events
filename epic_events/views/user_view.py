@@ -26,7 +26,7 @@ def display_user_updated(email):
 
 
 def display_user_deleted():
-    print(f"This user is successfully deleted")
+    print("This user is successfully deleted")
 
 
 def display_users_list(users):

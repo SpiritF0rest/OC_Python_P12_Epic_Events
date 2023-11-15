@@ -1,4 +1,3 @@
-import click
 from click import ClickException
 
 
