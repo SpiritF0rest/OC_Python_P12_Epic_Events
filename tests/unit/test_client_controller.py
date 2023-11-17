@@ -3,7 +3,7 @@ from sqlalchemy import select
 
 from epic_events.controllers.client_controller import list_clients, get_client, create_client, update_client, \
     update_client_contact, delete_client
-from epic_events.models import User
+from epic_events.models import User, Client
 
 
 class TestListClientController:
@@ -63,11 +63,15 @@ class TestCreateClientController:
     def test_create_client_with_correct_argument(self, mocked_session):
         current_user = mocked_session.scalar(select(User).where(User.id == 3))
         email = "sophia@test.com"
-        options = ["-e", email, "-n", "sophia", "-ph", 123456789, "-c", "chess tournament"]
+        name = "sophia"
+        options = ["-e", email, "-n", name, "-ph", 123456789, "-c", "chess tournament"]
         result = self.runner.invoke(create_client, options,
                                     obj={"session": mocked_session, "current_user": current_user})
         assert result.exit_code == 0
         assert f"Client {email} is successfully created." in result.output
+        created_client = mocked_session.scalar(select(Client).where(Client.email == email))
+        assert created_client is not None
+        assert created_client.name == name
 
 
 class TestUpdateClientController:

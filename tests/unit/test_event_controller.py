@@ -6,7 +6,7 @@ from sqlalchemy import select
 
 from epic_events.controllers.event_controller import list_events, delete_event, get_event, update_event, \
     update_event_support_contact, create_event, check_date
-from epic_events.models import User
+from epic_events.models import User, Event
 
 
 class TestListEventController:
@@ -173,11 +173,14 @@ class TestDeleteEventController:
 
     def test_delete_event_with_correct_argument(self, mocked_session):
         current_user = mocked_session.scalar(select(User).where(User.id == 2))
-        options = ["-id", 1]
+        event_id = 1
+        options = ["-id", event_id]
         result = self.runner.invoke(delete_event, options, input="y", obj={"session": mocked_session,
                                                                            "current_user": current_user})
         assert result.exit_code == 0
         assert "This event is successfully deleted." in result.output
+        deleted_event = mocked_session.scalar(select(Event).where(Event.id == event_id))
+        assert deleted_event is None
 
 
 class TestCheckDate:

@@ -69,7 +69,7 @@ def login(ctx, email, password):
     token = encode({"id": user.id}, JWT_KEY, algorithm="HS256")
     with open(TOKEN_FILE_PATH, "w") as f:
         dump({"token": token}, f)
-    return display_successful_connection()
+    return display_successful_connection(login=True)
 
 
 @auth.command()
@@ -80,3 +80,4 @@ def logout():
         del data["token"]
     with open(TOKEN_FILE_PATH, "w") as f:
         dump(data, f)
+    return display_successful_connection(login=False)

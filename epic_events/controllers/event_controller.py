@@ -128,7 +128,8 @@ def update_event(session, ctx, event_id, start_date, end_date, location, attende
     try:
         selected_event.start_date = start_date if start_date else selected_event.start_date
         selected_event.end_date = end_date if end_date else selected_event.end_date
-        check_date(selected_event.start_date, selected_event.end_date)
+        if selected_event.start_date and selected_event.end_date:
+            check_date(selected_event.start_date, selected_event.end_date)
         selected_event.location = location if location else selected_event.location
         selected_event.attendees = attendees if attendees else selected_event.attendees
         selected_event.notes = notes if notes else selected_event.notes

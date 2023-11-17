@@ -35,11 +35,15 @@ class TestCreateUserController:
     def test_create_user_with_correct_argument(self, mocked_session):
         current_user = mocked_session.scalar(select(User).where(User.id == 1))
         email = "jack@test.com"
-        options = ["-n", "jack", "-e", email, "-r", "1", "--password", "1234"]
+        name = "jack"
+        options = ["-n", name, "-e", email, "-r", "1", "--password", "1234"]
         result = self.runner.invoke(create_user, options, obj={"session": mocked_session,
                                                                "current_user": current_user})
         assert result.exit_code == 0
         assert f"User {email} is successfully created" in result.output
+        created_user = mocked_session.scalar(select(User).where(User.email == email))
+        assert created_user is not None
+        assert created_user.name == name
 
 
 class TestGetUserController:

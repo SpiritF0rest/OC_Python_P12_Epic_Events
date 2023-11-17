@@ -4,7 +4,7 @@ from sqlalchemy import select
 
 from epic_events.controllers.contract_controller import (list_contracts, delete_contract, get_contract,
                                                          update_contract, create_contract, check_amount)
-from epic_events.models import User
+from epic_events.models import User, Contract
 
 
 class TestListContractController:
@@ -74,15 +74,20 @@ class TestUpdateContractController:
 
     def test_update_contract_with_correct_argument(self, mocked_session):
         current_user = mocked_session.scalar(select(User).where(User.id == 3))
-        contract_id = 1
+        contract_id = 2
         amount = 90
         left_to_pay = 10
         status = "SIGNED"
+        updated_contract = mocked_session.scalar(select(Contract).where(Contract.id == contract_id))
+        assert updated_contract.total_amount == 100
+        assert updated_contract.status == "UNSIGNED"
         options = ["-id", contract_id, "-a", amount, "-ltp", left_to_pay, "-s", status]
         result = self.runner.invoke(update_contract, options, obj={"session": mocked_session,
                                                                    "current_user": current_user})
         assert result.exit_code == 0
         assert [arg in result.output for arg in [str(contract_id), str(amount), str(left_to_pay), status]]
+        assert updated_contract.status == status
+        assert updated_contract.total_amount == amount
 
 
 class TestGetContractController:

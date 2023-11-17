@@ -1,8 +1,8 @@
 from click import ClickException
 
 
-def display_successful_connection():
-    print("Connection successful.")
+def display_successful_connection(login):
+    print("Connection successful." if login else "You are disconnected, see you later.")
 
 
 def display_auth_data_entry_error():
