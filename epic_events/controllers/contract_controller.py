@@ -19,8 +19,8 @@ def contract(ctx):
     ctx.ensure_object(dict)
 
 
-def check_amount(amount, lef_to_pay):
-    return True if amount >= lef_to_pay >= 0 and amount >= 0 else display_error_amount()
+def check_amount(amount, left_to_pay):
+    return True if amount >= left_to_pay >= 0 and amount >= 0 else display_error_amount()
 
 
 @contract.command(name="list")
@@ -91,8 +91,6 @@ def update_contract(session, ctx, contract_id, amount, left_to_pay, status):
     if not selected_contract:
         return display_unknown_contract()
     client = session.scalar(select(Client).where(Client.id == selected_contract.client_id))
-    if not client:
-        return display_unknown_client()
     if requester.role == 1 and client.commercial_contact_id != requester.id:
         return display_not_authorized()
     try:

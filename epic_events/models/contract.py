@@ -13,7 +13,7 @@ class Contract(Base):
     __tablename__ = "contracts"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    client_id: Mapped[int] = mapped_column(ForeignKey("clients.id"))
+    client_id: Mapped[int] = mapped_column(ForeignKey("clients.id", ondelete="CASCADE"))
     total_amount: Mapped[int]
     left_to_pay: Mapped[int]
     status: Mapped[Status]

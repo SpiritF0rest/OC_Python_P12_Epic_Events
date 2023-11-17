@@ -27,9 +27,12 @@ def insert_initial_data(session):
     session.commit()
 
     role = session.scalar(select(Role).where(Role.name == "management"))
-    first_user = User(name="first manager", email="first_manager@epicevents.com", role=role.id)
     load_dotenv()
     first_user_password = getenv("FIRST_USER_PASSWORD")
+    first_user_email = getenv("FIRST_USER_EMAIL")
+    first_user_name = getenv("FIRST_USER_NAME")
+    first_user = User(name=first_user_name, email=first_user_email, role=role.id)
+
     first_user.set_password(first_user_password)
 
     session.add(first_user)
