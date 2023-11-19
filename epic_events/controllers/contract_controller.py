@@ -1,4 +1,5 @@
 import click
+import sentry_sdk
 from sqlalchemy import select
 
 from epic_events.controllers.auth_controller import check_auth
@@ -42,6 +43,7 @@ def list_contracts(session, ctx, client_id, unpaid, status):
         contracts = session.scalars(query)
         return display_contracts_list(contracts)
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         return display_exception(e)
 
 
@@ -68,8 +70,11 @@ def create_contract(session, ctx, client_id, amount, left_to_pay, status):
                                 status=status)
         session.add(new_contract)
         session.commit()
+        if new_contract.status == "SIGNED":
+            sentry_sdk.capture_message(f"Contract {new_contract.id} has been signed.")
         return display_contract_created(new_contract)
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         return display_exception(e)
 
 
@@ -99,8 +104,11 @@ def update_contract(session, ctx, contract_id, amount, left_to_pay, status):
         check_amount(selected_contract.total_amount, selected_contract.left_to_pay)
         selected_contract.status = status if status else selected_contract.status
         session.commit()
+        if status == "SIGNED":
+            sentry_sdk.capture_message(f"Contract {selected_contract.id} has been signed.")
         return display_contract_updated(selected_contract)
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         return display_exception(e)
 
 
@@ -131,4 +139,5 @@ def delete_contract(session, ctx, contract_id):
         session.commit()
         return display_contract_deleted()
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         return display_exception(e)

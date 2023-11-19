@@ -1,4 +1,5 @@
 import click
+import sentry_sdk
 from sqlalchemy import select, and_
 
 from epic_events.controllers.auth_controller import check_auth
@@ -31,6 +32,7 @@ def list_clients(session, ctx, contact_id):
         clients = session.scalars(query.order_by(Client.name))
         return display_clients_list(clients)
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         return display_exception(e)
 
 
@@ -69,6 +71,7 @@ def create_client(session, ctx, email, name, phone, company):
         session.commit()
         return display_client_created(email)
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         return display_exception(e)
 
 
@@ -101,6 +104,7 @@ def update_client(session, ctx, client_id, email, name, phone, company):
         session.commit()
         return display_client_updated(selected_client.email)
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         return display_exception(e)
 
 
@@ -121,6 +125,7 @@ def update_client_contact(session, ctx, client_id, contact_id):
         session.commit()
         return display_client_contact_updated(selected_client, selected_contact)
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         return display_exception(e)
 
 
@@ -141,4 +146,5 @@ def delete_client(session, ctx, client_id):
         session.commit()
         return display_client_deleted()
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         return display_exception(e)

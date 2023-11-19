@@ -4,6 +4,7 @@ from json.decoder import JSONDecodeError
 from os import getenv
 
 import click
+import sentry_sdk
 from dotenv import load_dotenv
 from jwt import encode, decode, InvalidTokenError
 from sqlalchemy import select
@@ -32,9 +33,11 @@ def get_token():
         with open(TOKEN_FILE_PATH, 'r') as f:
             data = load(f)
             return data.get('token', None)
-    except JSONDecodeError:
+    except JSONDecodeError as e:
+        sentry_sdk.capture_exception(e)
         return None
-    except FileNotFoundError:
+    except FileNotFoundError as e:
+        sentry_sdk.capture_exception(e)
         return None
 
 
@@ -50,7 +53,8 @@ def check_auth(function):
             current_user = session.scalar(select(User).where(User.id == auth_id["id"]))
             ctx.obj["current_user"] = current_user
             return function(ctx, *args, ** kwargs)
-        except InvalidTokenError:
+        except InvalidTokenError as e:
+            sentry_sdk.capture_exception(e)
             return display_invalid_token()
     return wrapper
 

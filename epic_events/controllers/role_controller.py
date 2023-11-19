@@ -1,4 +1,5 @@
 import click
+import sentry_sdk
 from sqlalchemy import select
 
 from epic_events.controllers.auth_controller import check_auth
@@ -23,6 +24,7 @@ def list_roles(session, ctx):
         roles = session.scalars(select(Role)).all()
         return display_roles_list(roles)
     except Exception as e:
+        sentry_sdk.capture_exception(e)
         return display_exception(e)
 
 
