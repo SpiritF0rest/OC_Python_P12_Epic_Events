@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import ForeignKey, String
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from epic_events.models.base import Base
 
@@ -19,6 +19,7 @@ class Event(Base):
     notes: Mapped[str] = mapped_column(nullable=True)
     creation_date: Mapped[datetime] = mapped_column(insert_default=datetime.utcnow())
     update_date: Mapped[datetime] = mapped_column(insert_default=datetime.utcnow(), onupdate=datetime.utcnow())
+    contract = relationship("Contract", back_populates="events")
 
     def __repr__(self):
         return f"Event(id={self.id}, contract_id={self.contract_id}, contact_id={self.support_contact_id})"

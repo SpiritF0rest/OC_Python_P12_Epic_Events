@@ -1,7 +1,6 @@
 from click.testing import CliRunner
 from sqlalchemy import select
 
-from epic_events.controllers.auth_controller import login, logout
 from epic_events.controllers.client_controller import create_client, delete_client
 from epic_events.controllers.contract_controller import create_contract, update_contract
 from epic_events.controllers.event_controller import create_event, update_event_support_contact, update_event
@@ -101,9 +100,9 @@ class TestBasicUsage:
                                     obj={"session": mocked_session, "current_user": new_commercial})
         assert result.exit_code == 0
         assert "This client is successfully deleted." in result.output
-        old_client = mocked_session.scalar(select(Client).where(Client.id == new_client.id))
+        deleted_client = mocked_session.scalar(select(Client).where(Client.id == new_client.id))
         old_contract = mocked_session.scalar(select(Contract).where(Contract.id == new_contract.id))
         old_event = mocked_session.scalar(select(Event).where(Event.id == new_event.id))
-        assert old_client is None
+        assert deleted_client is None
         assert old_contract is None
         assert old_event is None
