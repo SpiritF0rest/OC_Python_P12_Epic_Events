@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import click
 import sentry_sdk
 from sqlalchemy import select, and_
@@ -22,8 +24,11 @@ def event(ctx):
 
 
 def check_date(start, end):
+    datetime_now = datetime.now()
+    if start < datetime_now or end < datetime_now:
+        return display_error_event_date(start, end, has_passed=True)
     if start > end:
-        return display_error_event_date(start, end)
+        return display_error_event_date(start, end, has_passed=False)
 
 
 @event.command(name="list")

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from click import ClickException
 from click.testing import CliRunner
@@ -186,15 +186,23 @@ class TestDeleteEventController:
 class TestCheckDate:
 
     def test_check_date_with_correct_date(self):
-        start_date = datetime.strptime("01-07-2023 13:00", "%d-%m-%Y %H:%M")
-        end_date = datetime.strptime("01-07-2023 15:00", "%d-%m-%Y %H:%M")
+        start_date = datetime.now() + timedelta(days=1)
+        end_date = datetime.now() + timedelta(days=2)
         result = check_date(start_date, end_date)
         assert result is None
 
     def test_check_date_with_end_date_before_start_date(self):
-        start_date = datetime.strptime("01-07-2023 15:00", "%d-%m-%Y %H:%M")
-        end_date = datetime.strptime("01-07-2023 13:00", "%d-%m-%Y %H:%M")
+        start_date = datetime.now() + timedelta(days=2)
+        end_date = datetime.now() + timedelta(days=1)
         try:
             check_date(start_date, end_date)
         except ClickException as e:
             assert f"End date {end_date} can't be before start date {start_date}." in e.message
+
+    def test_check_date_with_date_before_now(self):
+        start_date = datetime.now() - timedelta(days=2)
+        end_date = datetime.now() - timedelta(days=1)
+        try:
+            check_date(start_date, end_date)
+        except ClickException as e:
+            assert "Start date and end date cannot be in the past" in e.message

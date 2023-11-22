@@ -24,8 +24,11 @@ def display_event_created(event):
     print(f"Event {event.id} is successfully created.")
 
 
-def display_error_event_date(start_date, end_date):
-    raise ClickException(f"End date {end_date} can't be before start date {start_date}.")
+def display_error_event_date(start_date, end_date, has_passed):
+    if has_passed:
+        raise ClickException("Start date and end date cannot be in the past")
+    else:
+        raise ClickException(f"End date {end_date} can't be before start date {start_date}.")
 
 
 def display_event_deleted():

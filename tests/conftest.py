@@ -1,8 +1,8 @@
+from datetime import datetime, timedelta
+
 import pytest
 
 from epic_events.models.base import Base
-
-from datetime import datetime
 
 
 @pytest.fixture(scope="function")
@@ -105,8 +105,8 @@ def sqlalchemy_mock_config():
             {
                 "id": 1,
                 "contract_id": 1,
-                "start_date": datetime(2023, 10, 24, 14, 30, 0),
-                "end_date": datetime(2023, 10, 25, 14, 30, 0),
+                "start_date": (datetime.now() + timedelta(days=1)),
+                "end_date": (datetime.now() + timedelta(days=2)),
                 "support_contact_id": 2,
                 "location": "Paris",
                 "attendees": 20,
