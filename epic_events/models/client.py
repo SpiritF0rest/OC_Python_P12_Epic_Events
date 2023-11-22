@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -14,8 +14,9 @@ class Client(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True)
     phone: Mapped[str] = mapped_column(String(10), nullable=True)
     company: Mapped[str] = mapped_column(String(255), nullable=True)
-    creation_date: Mapped[datetime] = mapped_column(insert_default=datetime.utcnow())
-    update_date: Mapped[datetime] = mapped_column(insert_default=datetime.utcnow(), onupdate=datetime.utcnow())
+    creation_date: Mapped[datetime] = mapped_column(insert_default=datetime.now(timezone.utc))
+    update_date: Mapped[datetime] = mapped_column(insert_default=datetime.now(timezone.utc),
+                                                  onupdate=datetime.now(timezone.utc))
     commercial_contact_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     contracts = relationship("Contract",
                              back_populates="client",

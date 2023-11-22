@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -17,8 +17,9 @@ class Event(Base):
     location: Mapped[str] = mapped_column(String(255), nullable=True)
     attendees: Mapped[int] = mapped_column(nullable=True)
     notes: Mapped[str] = mapped_column(nullable=True)
-    creation_date: Mapped[datetime] = mapped_column(insert_default=datetime.utcnow())
-    update_date: Mapped[datetime] = mapped_column(insert_default=datetime.utcnow(), onupdate=datetime.utcnow())
+    creation_date: Mapped[datetime] = mapped_column(insert_default=datetime.now(timezone.utc))
+    update_date: Mapped[datetime] = mapped_column(insert_default=datetime.now(timezone.utc),
+                                                  onupdate=datetime.now(timezone.utc))
     contract = relationship("Contract", back_populates="events")
 
     def __repr__(self):

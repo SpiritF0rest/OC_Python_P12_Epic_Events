@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Literal
 
 from sqlalchemy import ForeignKey
@@ -17,8 +17,9 @@ class Contract(Base):
     total_amount: Mapped[int]
     left_to_pay: Mapped[int]
     status: Mapped[Status]
-    creation_date: Mapped[datetime] = mapped_column(insert_default=datetime.utcnow())
-    update_date: Mapped[datetime] = mapped_column(insert_default=datetime.utcnow(), onupdate=datetime.utcnow())
+    creation_date: Mapped[datetime] = mapped_column(insert_default=datetime.now(timezone.utc))
+    update_date: Mapped[datetime] = mapped_column(insert_default=datetime.now(timezone.utc),
+                                                  onupdate=datetime.now(timezone.utc))
     client = relationship("Client", back_populates="contracts")
     events = relationship("Event", back_populates="contract", cascade="all, delete")
 
