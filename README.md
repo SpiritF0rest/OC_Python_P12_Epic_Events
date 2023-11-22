@@ -73,21 +73,21 @@ Ensure that the Postgres container is built and currently executing:
 $ docker ps
 ```
 
-#### :wrench: Dotenv and init DB :wrench:
+#### :wrench: Dotenv :wrench:
 
 ```
 Copy the .env.example in a .env file and fill with the correct data:
 DB_URL : be careful that it matches what you put when creating the docker container
 FIRST_USER_* : the first manager who will be responsible for creating the first users
-
-When your container is running, .env is filled, the modules are installed and the environment is activated, Init the database:
-$ poetry run python epic_events/database.py
 ```
 Now, you can use the app :tada:
 
 ### :keyboard: Basic use and commands :keyboard:
 ***
 ```
+First use, init the database (your container is running, .env is filled, the modules are installed and the environment is activated):
+$ poetry run python epic_events/database.py
+
 All commands start with:
 $ python3 -m epic_events
 
