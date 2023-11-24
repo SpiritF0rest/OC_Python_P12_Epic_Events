@@ -3,7 +3,7 @@ from os import getenv
 import sentry_sdk
 from dotenv import load_dotenv
 
-from epic_events.controllers import cli
+from epic_events.controllers.cli import cli
 
 
 if __name__ == "__main__":

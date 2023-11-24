@@ -9,7 +9,7 @@ from epic_events.views.client_view import display_unknown_client
 from epic_events.views.contract_view import (display_contracts_list, display_contract_created,
                                              display_unknown_contract, display_contract_data, display_contract_deleted,
                                              display_contract_updated, display_error_amount)
-from epic_events.views.generic_view import display_exception, display_missing_data, display_no_data_to_update
+from epic_events.views.generic_view import display_exception, display_no_data_to_update
 from epic_events.views.permissions_view import display_not_authorized
 
 
@@ -21,6 +21,15 @@ def contract(ctx):
 
 
 def check_amount(amount, left_to_pay):
+    """Check that the remaining amount to be paid is not greater than the total amount
+
+    Args:
+        amount (int): total amount of the contract
+        left_to_pay (int): the remaining amount to pay
+
+    Returns:
+        True if the condition is valid else display an error
+    """
     return True if amount >= left_to_pay >= 0 and amount >= 0 else display_error_amount()
 
 
@@ -56,11 +65,10 @@ def list_contracts(session, ctx, client_id, unpaid, status):
 @click.pass_context
 @has_permission(["management"])
 def create_contract(session, ctx, client_id, amount, left_to_pay, status):
-    if not (client_id or amount):
-        return display_missing_data()
     client = session.scalar(select(Client).where(Client.id == client_id))
     if not client:
         return display_unknown_client()
+
     try:
         current_left_to_pay = left_to_pay if left_to_pay else amount
         check_amount(amount, current_left_to_pay)
@@ -70,8 +78,13 @@ def create_contract(session, ctx, client_id, amount, left_to_pay, status):
                                 status=status)
         session.add(new_contract)
         session.commit()
+
+        # Send a message via sentry to notify that a contract has been signed
         if new_contract.status == "SIGNED":
-            sentry_sdk.capture_message(f"Contract {new_contract.id} has been signed.")
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("contracts-info", "signed")
+                sentry_sdk.capture_message(f"Contract {new_contract.id} has been signed.")
+
         return display_contract_created(new_contract)
     except Exception as e:
         sentry_sdk.capture_exception(e)
@@ -87,10 +100,9 @@ def create_contract(session, ctx, client_id, amount, left_to_pay, status):
 @click.pass_context
 @has_permission(["management", "commercial"])
 def update_contract(session, ctx, contract_id, amount, left_to_pay, status):
-    if not contract_id:
-        return display_missing_data()
     if not (amount or left_to_pay or status):
         return display_no_data_to_update()
+
     requester = ctx.obj["current_user"]
     selected_contract = session.scalar(select(Contract).where(Contract.id == contract_id))
     if not selected_contract:
@@ -98,14 +110,20 @@ def update_contract(session, ctx, contract_id, amount, left_to_pay, status):
     client = session.scalar(select(Client).where(Client.id == selected_contract.client_id))
     if requester.role == 1 and client.commercial_contact_id != requester.id:
         return display_not_authorized()
+
     try:
         selected_contract.total_amount = amount if amount else selected_contract.total_amount
         selected_contract.left_to_pay = left_to_pay if left_to_pay else selected_contract.left_to_pay
         check_amount(selected_contract.total_amount, selected_contract.left_to_pay)
         selected_contract.status = status if status else selected_contract.status
         session.commit()
+
+        # Send a message via sentry to notify that a contract has been signed
         if status == "SIGNED":
-            sentry_sdk.capture_message(f"Contract {selected_contract.id} has been signed.")
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("contracts-info", "signed")
+                sentry_sdk.capture_message(f"Contract {selected_contract.id} has been signed.")
+
         return display_contract_updated(selected_contract)
     except Exception as e:
         sentry_sdk.capture_exception(e)
@@ -117,8 +135,6 @@ def update_contract(session, ctx, contract_id, amount, left_to_pay, status):
 @click.pass_context
 @has_permission(["management", "commercial", "support"])
 def get_contract(session, ctx, contract_id):
-    if not contract_id:
-        return display_missing_data()
     selected_contract = session.scalar(select(Contract).where(Contract.id == contract_id))
     if not selected_contract:
         return display_unknown_contract()
@@ -132,8 +148,10 @@ def get_contract(session, ctx, contract_id):
 @has_permission(roles=["management"])
 def delete_contract(session, ctx, contract_id):
     selected_contract = session.scalar(select(Contract).where(Contract.id == contract_id))
+
     if not selected_contract:
         return display_unknown_contract()
+
     try:
         session.delete(selected_contract)
         session.commit()

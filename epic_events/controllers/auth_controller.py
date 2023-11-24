@@ -34,9 +34,14 @@ def get_token():
             data = load(f)
             return data.get('token', None)
     except JSONDecodeError as e:
-        sentry_sdk.capture_exception(e)
+        # Send a message via sentry to notify the json error
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("json-error", "decode error")
+            sentry_sdk.capture_exception(e)
         return None
-    except FileNotFoundError as e:
+    except FileNotFoundError:
+        return None
+    except Exception as e:
         sentry_sdk.capture_exception(e)
         return None
 
@@ -54,7 +59,10 @@ def check_auth(function):
             ctx.obj["current_user"] = current_user
             return function(ctx, *args, ** kwargs)
         except InvalidTokenError as e:
-            sentry_sdk.capture_exception(e)
+            # Send a message via sentry to notify the token error
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag("token-error", "invalid")
+                sentry_sdk.capture_exception(e)
             return display_invalid_token()
     return wrapper
 
@@ -66,10 +74,12 @@ def check_auth(function):
 def login(ctx, email, password):
     session = ctx.obj["session"]
     user = session.scalar(select(User).where(User.email == email))
+
     if not (user and user.check_password(password)):
         return display_auth_data_entry_error()
     if get_token():
         return display_auth_already_connected()
+
     token = encode({"id": user.id}, JWT_KEY, algorithm="HS256")
     with open(TOKEN_FILE_PATH, "w") as f:
         dump({"token": token}, f)

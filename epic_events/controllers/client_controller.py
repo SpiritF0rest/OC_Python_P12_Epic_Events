@@ -8,7 +8,7 @@ from epic_events.models import Client, User
 from epic_events.views.client_view import display_unknown_client, display_client_data, \
     display_clients_list, display_client_already_exists, display_client_created, display_client_updated, \
     display_client_deleted, display_client_contact_updated
-from epic_events.views.generic_view import display_exception, display_missing_data, display_no_data_to_update
+from epic_events.views.generic_view import display_exception, display_no_data_to_update
 from epic_events.views.permissions_view import display_not_authorized
 from epic_events.views.user_view import display_unknown_user
 
@@ -41,8 +41,6 @@ def list_clients(session, ctx, contact_id):
 @click.pass_context
 @has_permission(["management", "commercial", "support"])
 def get_client(session, ctx,  client_id):
-    if not client_id:
-        return display_missing_data()
     selected_client = session.scalar(select(Client).where(Client.id == client_id))
     if not selected_client:
         return display_unknown_client()
@@ -57,10 +55,9 @@ def get_client(session, ctx,  client_id):
 @click.pass_context
 @has_permission(["commercial"])
 def create_client(session, ctx, email, name, phone, company):
-    if not email:
-        return display_missing_data()
     if session.scalar(select(Client).where(Client.email == email)):
         return display_client_already_exists(email)
+
     try:
         new_client = Client(email=email,
                             commercial_contact_id=ctx.obj["current_user"].id,
@@ -84,18 +81,19 @@ def create_client(session, ctx, email, name, phone, company):
 @click.pass_context
 @has_permission(["commercial"])
 def update_client(session, ctx, client_id, email, name, phone, company):
-    if not client_id:
-        return display_missing_data()
     if not (email or name or phone or company):
         return display_no_data_to_update()
+
     requester = ctx.obj["current_user"].id
     selected_client = session.scalar(select(Client).where(Client.id == client_id))
     if not selected_client:
         return display_unknown_client()
     if selected_client.commercial_contact_id != requester:
         return display_not_authorized()
+    # Check if the email provided is not already assigned to another client
     if email and session.scalar(select(Client).where(Client.email == email)):
         return display_client_already_exists(email)
+
     try:
         selected_client.email = email if email else selected_client.email
         selected_client.name = name if name else selected_client.name
@@ -117,9 +115,11 @@ def update_client_contact(session, ctx, client_id, contact_id):
     selected_client = session.scalar(select(Client).where(Client.id == client_id))
     if not selected_client:
         return display_unknown_client()
+
     selected_contact = session.scalar(select(User).where(and_(User.id == contact_id, User.role == 1)))
     if not selected_contact:
         return display_unknown_user()
+
     try:
         selected_client.commercial_contact_id = selected_contact.id
         session.commit()
@@ -141,6 +141,7 @@ def delete_client(session, ctx, client_id):
         return display_unknown_client()
     if selected_client.commercial_contact_id != requester:
         return display_not_authorized()
+
     try:
         session.delete(selected_client)
         session.commit()

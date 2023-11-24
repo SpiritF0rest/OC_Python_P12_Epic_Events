@@ -11,7 +11,7 @@ from epic_events.views.contract_view import display_unknown_contract
 from epic_events.views.event_view import display_events_list, display_unknown_event, display_event_data, \
     display_cant_create_event, display_event_created, display_error_event_date, display_event_deleted, \
     display_event_contact_updated, display_event_updated
-from epic_events.views.generic_view import display_exception, display_missing_data, display_no_data_to_update
+from epic_events.views.generic_view import display_exception, display_no_data_to_update
 from epic_events.views.permissions_view import display_not_authorized
 from epic_events.views.user_view import display_unknown_user
 
@@ -24,6 +24,15 @@ def event(ctx):
 
 
 def check_date(start, end):
+    """Checks that the dates are in the future and that the end date is not before the start date
+
+        Args:
+            start (datetime): event start date
+            end (datetime): event end date
+
+        Returns:
+            error if conditions are not valid
+    """
     datetime_now = datetime.now()
     if start < datetime_now or end < datetime_now:
         return display_error_event_date(start, end, has_passed=True)
@@ -65,19 +74,22 @@ def list_events(session, ctx, contract_id, support_id, no_contact):
 @click.pass_context
 @has_permission(["commercial"])
 def create_event(session, ctx, contract_id, start_date, end_date, location, attendees, notes):
-    if not contract_id:
-        return display_missing_data()
     contract = session.scalar(select(Contract).where(Contract.id == contract_id))
     if not contract:
         return display_unknown_contract()
+
     client = session.scalar(select(Client).where(Client.id == contract.client_id))
     requester = ctx.obj["current_user"]
     if requester.id != client.commercial_contact_id:
         return display_not_authorized()
+
+    # Checks that the contract is signed before creating the event
     if contract.status != "SIGNED":
         return display_cant_create_event(contract)
+
     if start_date and end_date:
         check_date(start_date, end_date)
+
     try:
         new_event = Event(contract_id=contract_id,
                           start_date=start_date,
@@ -102,9 +114,11 @@ def update_event_support_contact(session, ctx, event_id, support_id):
     selected_event = session.scalar(select(Event).where(Event.id == event_id))
     if not selected_event:
         return display_unknown_event()
+
     selected_contact = session.scalar(select(User).where(and_(User.id == support_id, User.role == 2)))
     if not selected_contact:
         return display_unknown_user()
+
     try:
         selected_event.support_contact_id = selected_contact.id
         session.commit()
@@ -128,12 +142,15 @@ def update_event_support_contact(session, ctx, event_id, support_id):
 def update_event(session, ctx, event_id, start_date, end_date, location, attendees, notes):
     if not (start_date or end_date or location or attendees or notes):
         return display_no_data_to_update()
+
     selected_event = session.scalar(select(Event).where(Event.id == event_id))
     if not selected_event:
         return display_unknown_event()
+
     requester = ctx.obj["current_user"]
     if requester.id != selected_event.support_contact_id:
         return display_not_authorized()
+
     try:
         selected_event.start_date = start_date if start_date else selected_event.start_date
         selected_event.end_date = end_date if end_date else selected_event.end_date
@@ -154,8 +171,6 @@ def update_event(session, ctx, event_id, start_date, end_date, location, attende
 @click.pass_context
 @has_permission(["management", "commercial", "support"])
 def get_event(session, ctx, event_id):
-    if not event_id:
-        return display_missing_data()
     selected_event = session.scalar(select(Event).where(Event.id == event_id))
     if not selected_event:
         return display_unknown_event()
@@ -171,9 +186,11 @@ def delete_event(session, ctx, event_id):
     selected_event = session.scalar(select(Event).where(Event.id == event_id))
     if not selected_event:
         return display_unknown_event()
+
     requester = ctx.obj["current_user"]
     if requester.id != selected_event.support_contact_id:
         return display_not_authorized()
+
     try:
         session.delete(selected_event)
         session.commit()

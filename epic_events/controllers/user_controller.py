@@ -29,9 +29,11 @@ def create_user(session, ctx, name, email, password, role):
         return display_missing_data()
     if session.scalar(select(User).where(User.email == email)):
         return display_user_already_exists(email)
+
     user_role = session.scalar(select(Role).where(Role.id == role))
     if not user_role:
         return display_incorrect_role(role)
+
     try:
         new_user = User(name=name,
                         email=email,
@@ -39,7 +41,12 @@ def create_user(session, ctx, name, email, password, role):
         new_user.set_password(password)
         session.add(new_user)
         session.commit()
-        sentry_sdk.capture_message("New user created.")
+
+        # Send a message via sentry to notify that a user is created
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("user-info", "create user")
+            sentry_sdk.capture_message("New user created.")
+
         return display_user_created(email)
     except Exception as e:
         sentry_sdk.capture_exception(e)
@@ -54,24 +61,30 @@ def create_user(session, ctx, name, email, password, role):
 @click.pass_context
 @has_permission(roles=["management"])
 def update_user(session, ctx, user_id, name, email, role):
-    if not user_id:
-        return display_missing_data()
     if not (name or email or role):
         return display_no_data_to_update()
+
     selected_role = ""
     if role:
         selected_role = session.scalar(select(Role).where(Role.id == role))
         if not selected_role:
             return display_incorrect_role(role)
+
     selected_user = session.scalar(select(User).where(User.id == user_id))
     if not selected_user:
         return display_unknown_user()
+
     try:
         selected_user.name = name if name else selected_user.name
         selected_user.email = email if email else selected_user.email
         selected_user.role = selected_role.id if role else selected_user.role
         session.commit()
-        sentry_sdk.capture_message(f"User {selected_user.id} has been updated.")
+
+        # Send a message via sentry to notify that a user is updated
+        with sentry_sdk.push_scope() as scope:
+            scope.set_tag("user-info", "update user")
+            sentry_sdk.capture_message(f"User {selected_user.id} has been updated.")
+
         return display_user_updated(selected_user.email)
     except Exception as e:
         sentry_sdk.capture_exception(e)
@@ -83,8 +96,6 @@ def update_user(session, ctx, user_id, name, email, role):
 @click.pass_context
 @has_permission(roles=["management"])
 def get_user(session, ctx, user_id):
-    if not user_id:
-        return display_missing_data()
     selected_user = session.scalar(select(User).where(User.id == user_id))
     if not selected_user:
         return display_unknown_user()
@@ -100,6 +111,7 @@ def delete_user(session, ctx,  user_id):
     selected_user = session.scalar(select(User).where(User.id == user_id))
     if not selected_user:
         return display_unknown_user()
+
     try:
         session.delete(selected_user)
         session.commit()

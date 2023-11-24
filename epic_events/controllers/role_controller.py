@@ -26,8 +26,3 @@ def list_roles(session, ctx):
     except Exception as e:
         sentry_sdk.capture_exception(e)
         return display_exception(e)
-
-
-@role.command(name="create")
-def create_role():
-    pass
