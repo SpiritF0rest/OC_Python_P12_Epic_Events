@@ -23,3 +23,7 @@ def display_not_connected_error():
 
 def display_missing_requester():
     raise ClickException("Missing requester.")
+
+
+def display_expired_token():
+    raise ClickException("You have been logged out, please log back in.")
