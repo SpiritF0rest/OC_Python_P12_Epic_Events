@@ -5,8 +5,9 @@ def display_unknown_client():
     raise ClickException("Sorry, this client does not exist.")
 
 
-def display_client_data(data):
-    print(data)
+def display_client_data(client):
+    print(f"Id: {client.id}, name: {client.name}, email: {client.email}, phone: {client.phone}, "
+          f"company: {client.company}, contact_id: {client.commercial_contact_id}")
 
 
 def display_clients_list(clients):

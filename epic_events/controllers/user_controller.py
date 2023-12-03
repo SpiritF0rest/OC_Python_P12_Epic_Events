@@ -94,7 +94,7 @@ def update_user(session, ctx, user_id, name, email, role):
 @user.command(name="get")
 @click.option("-id", "--user_id", required=True, type=int)
 @click.pass_context
-@has_permission(roles=["management"])
+@has_permission(roles=["management", "commercial", "support"])
 def get_user(session, ctx, user_id):
     selected_user = session.scalar(select(User).where(User.id == user_id))
     if not selected_user:
