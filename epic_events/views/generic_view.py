@@ -11,3 +11,7 @@ def display_exception(e):
 
 def display_no_data_to_update():
     raise ClickException("Can't update without data in the command.")
+
+
+def display_operational_error():
+    raise ClickException("Sorry, there was a problem connecting to the server.")

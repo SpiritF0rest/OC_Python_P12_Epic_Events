@@ -42,10 +42,11 @@ class TestGetClientController:
 
     def test_get_client_with_existing_id(self, mocked_session):
         current_user = mocked_session.scalar(select(User).where(User.id == 1))
-        options = ["-id", "1"]
+        client_id = "1"
+        options = ["-id", client_id]
         result = self.runner.invoke(get_client, options, obj={"session": mocked_session, "current_user": current_user})
         assert result.exit_code == 0
-        assert "Client(id=1" in result.output
+        assert f"Id: {client_id}" in result.output
 
 
 class TestCreateClientController:
